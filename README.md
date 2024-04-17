@@ -14,7 +14,7 @@ To deploy this project on SUI, follow these steps:
 
 1. **Build Contracts:** Build the smart contracts using the `sui move build` command.
 
-2. **Deploy Contracts:** Deploy the compiled contracts to the SUI blockchain using your preferred deployment method 'sui client publish --gas-budget 100000000'(e.g., SUI CLI, SUI IDE).
+2. **Deploy Contracts:** Deploy the compiled contracts to the SUI blockchain using your preferred deployment method `sui client publish --gas-budget 100000000` (e.g., SUI CLI, SUI IDE).
 
 3. **Interact with Contracts:** Use SUI transactions to interact with the deployed contracts, such as creating sessions, booking sessions, submitting payments, resolving disputes, and requesting refunds.
 
