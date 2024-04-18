@@ -78,7 +78,7 @@ module crypto_advisor_marketplace::crypto_advisor_marketplace {
         let escrow_amount = balance::value(&advisor_session.escrow);
         let escrow_coin = coin::take(&mut advisor_session.escrow, escrow_amount, ctx);
         if (resolved) {
-            let advisor = *borrow(&advisor_session.advisor);
+            let advisor = *borrow(&advisor_session.advisor).unwrap();
             // Transfer funds to the advisor
             transfer::public_transfer(escrow_coin, advisor);
         } else {
@@ -96,7 +96,7 @@ module crypto_advisor_marketplace::crypto_advisor_marketplace {
         assert!(advisor_session.client == tx_context::sender(ctx), ENotBooked);
         assert!(advisor_session.sessionScheduled && !advisor_session.dispute, EInvalidSession);
         assert!(is_some(&advisor_session.advisor), EInvalidBooking);
-        let advisor = *borrow(&advisor_session.advisor);
+        let advisor = *borrow(&advisor_session.advisor).unwrap();
         let escrow_amount = balance::value(&advisor_session.escrow);
         let escrow_coin = coin::take(&mut advisor_session.escrow, escrow_amount, ctx);
         // Transfer funds to the advisor
@@ -144,7 +144,7 @@ module crypto_advisor_marketplace::crypto_advisor_marketplace {
 
     public entry fun request_refund(advisor_session: &mut AdvisorSession, ctx: &mut TxContext) {
         assert!(tx_context::sender(ctx) == advisor_session.client, ENotBooked);
-        assert!(advisor_session.sessionScheduled == false, EInvalidWithdrawal);
+        assert!(!advisor_session.sessionScheduled, EInvalidWithdrawal); // Check if session is not scheduled
         let escrow_amount = balance::value(&advisor_session.escrow);
         let escrow_coin = coin::take(&mut advisor_session.escrow, escrow_amount, ctx);
         // Refund funds to the client
@@ -172,4 +172,23 @@ module crypto_advisor_marketplace::crypto_advisor_marketplace {
     //     assert!(advisor_session.dispute, EInvalidUpdate);
     //     // Additional logic to extend the dispute period
     // }
+
+    public entry fun extend_dispute_period(advisor_session: &mut AdvisorSession, extension_days: u64, ctx: &mut TxContext) {
+        assert!(tx_context::sender(ctx) == advisor_session.client, ENotBooked);
+        assert!(advisor_session.dispute, EInvalidUpdate);
+        
+        // Calculate the new dispute deadline
+        let current_time = tx_context::block_time(ctx);
+        let current_deadline = current_time + extension_days * 24 * 60 * 60; // Convert days to seconds
+        advisor_session.dispute_deadline = current_deadline;
+    }
+
+    public entry fun update_session_deadline(advisor_session: &mut AdvisorSession, new_deadline: u64, ctx: &mut TxContext) {
+        assert!(tx_context::sender(ctx) == advisor_session.client, ENotBooked);
+        assert!(advisor_session.sessionScheduled, EInvalidUpdate);
+
+        // Update the session deadline
+        advisor_session.deadline = new_deadline;
+    }
+
 }
